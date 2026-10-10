@@ -1,8 +1,19 @@
 import io
+import sys
 import csv
 import base64
 from pathlib import Path
 from typing import Optional, List
+
+# Ensure parent directory (repo root) is in sys.path so `from backend...` imports work when running inside backend directory
+_file_path = Path(__file__).resolve()
+_backend_dir = _file_path.parent
+_root_dir = _backend_dir.parent
+if str(_root_dir) not in sys.path:
+    sys.path.insert(0, str(_root_dir))
+if str(_backend_dir) not in sys.path:
+    sys.path.insert(0, str(_backend_dir))
+
 from PIL import Image
 import fitz # PyMuPDF
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query, BackgroundTasks
@@ -10,17 +21,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse, FileResponse
 from pydantic import BaseModel
 
-from backend.config import SAMPLES_DIR, ELA_QUALITY_1, ELA_SCALE_DEFAULT
-from backend.forensics.ela import ErrorLevelAnalysis
-from backend.forensics.noise_analysis import NoiseAnalysisEngine
-from backend.forensics.pdf_inspector import PDFInspector
-from backend.forensics.cmfd import CopyMoveForgeryDetector
-from backend.forensics.semantic_audit import SemanticAuditEngine
-from backend.forensics.exif_inspector import EXIFInspector
-from backend.forensics.pdf_signature import PDFSignatureValidator
-from backend.forensics.aggregator import ForensicAggregator
-from backend.forensics.report import ForensicReportGenerator
-from backend.samples.generate_samples import generate_clean_sample, generate_tampered_sample
+try:
+    from backend.config import SAMPLES_DIR, ELA_QUALITY_1, ELA_SCALE_DEFAULT
+    from backend.forensics.ela import ErrorLevelAnalysis
+    from backend.forensics.noise_analysis import NoiseAnalysisEngine
+    from backend.forensics.pdf_inspector import PDFInspector
+    from backend.forensics.cmfd import CopyMoveForgeryDetector
+    from backend.forensics.semantic_audit import SemanticAuditEngine
+    from backend.forensics.exif_inspector import EXIFInspector
+    from backend.forensics.pdf_signature import PDFSignatureValidator
+    from backend.forensics.aggregator import ForensicAggregator
+    from backend.forensics.report import ForensicReportGenerator
+    from backend.samples.generate_samples import generate_clean_sample, generate_tampered_sample
+except ModuleNotFoundError:
+    from config import SAMPLES_DIR, ELA_QUALITY_1, ELA_SCALE_DEFAULT
+    from forensics.ela import ErrorLevelAnalysis
+    from forensics.noise_analysis import NoiseAnalysisEngine
+    from forensics.pdf_inspector import PDFInspector
+    from forensics.cmfd import CopyMoveForgeryDetector
+    from forensics.semantic_audit import SemanticAuditEngine
+    from forensics.exif_inspector import EXIFInspector
+    from forensics.pdf_signature import PDFSignatureValidator
+    from forensics.aggregator import ForensicAggregator
+    from forensics.report import ForensicReportGenerator
+    from samples.generate_samples import generate_clean_sample, generate_tampered_sample
+
 
 
 app = FastAPI(
